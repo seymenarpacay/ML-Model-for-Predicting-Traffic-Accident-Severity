@@ -1,6 +1,8 @@
 # ML-Model-for-Predicting-Traffic-Accident-Severity
 Main Objective: To develop a model that predicts the "Most Severe Injury" in an accident using past accident records. Problem Type: A Classification problem within the scope of Supervised Learning.
 
+Please enter the entries in English and in capital letters as shown.
+
 ==================== USER INPUT INFORMATION ====================
 
 1) Traffic Control (traffic_control_device)
@@ -102,4 +104,4 @@ Main Objective: To develop a model that predicts the "Most Severe Injury" in an 
 12) Intersection Related?
 Enter 1 or 0.
 
-Please enter the entries in English and in capital letters as shown.
+
