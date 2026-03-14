@@ -19,8 +19,8 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.utils import resample 
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-# 1. VERİ YÜKLEME VE TEMİZLİK (Senin Orijinal Kısmın)
-veriseti = pd.read_excel('kaza_verilerr.xlsx', 'traffic_accidents')
+# 1. DATA UPLOAD AND CLEANING
+veriseti = pd.read_excel('traffic_accidents.xlsx', 'traffic_accidents')
 veriseti = veriseti.replace({'Y': 1, 'N': 0, 'y': 1, 'n': 0})
 
 cols_to_drop = ['crash_date', 'road_defect', 'crash_type', 'damage', 'injuries_total', 
@@ -36,7 +36,7 @@ X = pd.get_dummies(X, columns=X.select_dtypes(include=['object']).columns, drop_
 le = LabelEncoder()
 y = le.fit_transform(y)
 
-# 3. VERİ DENGELEME (Upsampling)
+# 3. UPSAMPLING
 df_egitim = pd.concat([X, pd.Series(y, name='target')], axis=1)
 df_majority = df_egitim[df_egitim.target == 2]
 df_minority_0 = df_egitim[df_egitim.target == 0]
@@ -49,13 +49,13 @@ y_resampled = df_final['target']
 
 X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.3, random_state=42)
 
-# YSA için veriyi ölçeklendirmemiz lazım (Ağaçlar için fark etmez ama YSA için şart)
+# We need to scale the data for ANNs (this doesn't matter for trees, but it's essential for ANNs).
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # ==========================================
-# 4. MODELLERİ TANIMLAMA VE EĞİTME
+# 4. DEFINING AND TRAINING MODELS
 # ==========================================
 modeller = {
     "Karar Ağacı": DecisionTreeClassifier(random_state=42),
@@ -67,7 +67,7 @@ basari_skorlari = {}
 
 print("🚀 Modeller Yarıştırılıyor...")
 for isim, model in modeller.items():
-    # YSA ise ölçekli veriyi kullan, değilse normali
+    # If using an ANN, use scaled data; otherwise, use the normal data.
     if isim == "Yapay Sinir Ağları":
         model.fit(X_train_scaled, y_train)
         tahmin = model.predict(X_test_scaled)
@@ -80,7 +80,7 @@ for isim, model in modeller.items():
     print(f"✅ {isim} tamamlandı. Başarı: %{acc:.2f}")
 
 # ==========================================
-# 5. SONUÇLARI GRAFİĞE DÖKME (Rapora Ekle)
+# 5.GRAPHING THE RESULTS
 # ==========================================
 plt.figure(figsize=(10, 6))
 sns.barplot(x=list(basari_skorlari.keys()), y=list(basari_skorlari.values()), palette='viridis')
@@ -93,7 +93,7 @@ for i, v in enumerate(basari_skorlari.values()):
 
 plt.show()
 
-# En iyi modelin (Random Forest) detaylı raporunu yine basalım
+# Let's print the detailed report of the best model (Random Forest) again.
 print("\n" + "="*30)
 print("EN İYİ MODEL (RANDOM FOREST) DETAYLI RAPORU")
 print("="*30)
@@ -101,22 +101,22 @@ rf_final = modeller["Random Forest"]
 y_pred_rf = rf_final.predict(X_test)
 print(classification_report(y_test, y_pred_rf))
 
-# 1. LabelEncoder'ı yeniden kuruyoruz (Sonuçları metne çevirmek için)
-# (Orijinal kodda bir değişkene atanmadığı için tekrar fit ediyoruz)
+# 1. We are reinstalling LabelEncoder (to convert the results to text)
+# (We are fitting it again because it wasn't assigned to a variable in the original code)
 le_tahmin = LabelEncoder()
 le_tahmin.fit(veriseti["most_severe_injury"])
 
-# 2. Kullanıcıdan istenecek sütunları belirliyoruz
-# (Hedef değişken hariç kalan orijinal sütunlar)
+# 2. We define the columns to be requested from the user
+# (Original columns excluding the target variable)
 girdi_sutunlari = [col for col in veriseti.columns if col != "most_severe_injury"]
 
 def kaza_tahmini_yap():
     print("\n" + "="*40)
-    print("   YENİ KAZA TAHMİN SİSTEMİ")
+    print("   NEW ACCIDENT PREDICTION SYSTEM")
     print("="*40)
-    print("Girilecek inputlar her bir girdi için şunlardan biri olmalı ve büyük harfle yazılmalı: ")    
+    print("The input fields must be one of the following for each input and must be written in capital letters: ")    
     print("""         
-==================== KULLANICI GİRDİ BİLGİLERİ ====================
+==================== USER INPUT INFORMATION ====================
 
 1) Trafik Kontrolü (traffic_control_device)
 - NO CONTROLS (Kontrol Yok - En Yaygın)
